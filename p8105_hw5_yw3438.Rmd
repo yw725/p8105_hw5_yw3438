@@ -12,3 +12,35 @@ library(tidyverse)
 library(rvest)
 ```
 
+## Problem 1
+
+```{r}
+set.seed(10)
+
+iris_with_missing = iris %>% 
+  map_df(~replace(.x, sample(1:150, 20), NA)) %>%
+  mutate(Species = as.character(Species))
+```
+
+
+
+```{r}
+replace_measure = function(x) {
+  
+  if (is.numeric(x)) {
+    replace(x, is.na(x), mean(x, na.rm = TRUE))
+  } else if (is.character(x)) {
+    replace(x, is.na(x), "virginica")
+  }
+  
+}
+
+
+output = map(iris_with_missing, replace_measure)
+output
+
+```
+
+
+
+
