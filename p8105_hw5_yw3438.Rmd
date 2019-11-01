@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(rvest)
 library(purrr)
+library(viridis)
 ```
 
 ## Problem 1
@@ -72,8 +73,29 @@ file_data_tidy = file_datas %>%
     values_to = "data"
   ) %>% 
   mutate(file_name = str_remove(file_name, ".csv"),
-         week = str_remove(file_name, "_"))
-  
+         week = str_remove(week, "week_")) %>% 
+  separate(file_name, c("group", "subject_id"), sep = "_") %>% 
+  mutate(group = recode(group, "con" = "control", 
+                        "exp" = "experimental"))
+
+# Draw a lineplot that reflect
+file_data_tidy %>% 
+  ggplot(aes(x = week, y = data, 
+             color = subject_id, group = subject_id)) + 
+  geom_point(alpha = .5) + 
+  geom_line() +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(
+    x = "Week",
+    y = "Data Value",
+    title = "Observations on Each Subject Over Time"
+  ) +
+  viridis::scale_color_viridis(
+    name = "Subject ID", 
+    discrete = TRUE
+  ) +
+  facet_grid(~group)
 ```
 
 
