@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(rvest)
+library(purrr)
 ```
 
 ## Problem 1
@@ -41,6 +42,42 @@ output = map(iris_with_missing, replace_measure)
 output
 
 ```
+
+
+
+## Problem 2
+
+```{r message=FALSE, warning=FALSE}
+# Read in and tidy the filenames into a dataframe
+files_name = data.frame(list.files("./data")) 
+colnames(files_name) = "file_name"
+
+# Write a function to read in the data of all the files
+read_data = function(x) {
+  
+  read_csv(paste0("./data/", x)) 
+  
+}
+
+# Save the results in a column in the dataset
+file_datas = files_name %>% 
+  mutate(data = purrr::map(files_name$file_name, read_data)) %>% 
+  unnest()
+
+# Tidy the data
+file_data_tidy = file_datas %>% 
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "data"
+  ) %>% 
+  mutate(file_name = str_remove(file_name, ".csv"),
+         week = str_remove(file_name, "_"))
+  
+```
+
+
+
 
 
 
