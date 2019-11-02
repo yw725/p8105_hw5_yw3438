@@ -137,8 +137,9 @@ set.seed(10)
 #save the results into sim_results
 sim_results = 
   rerun(10000, sim_regression(30, 2, 0)) %>% 
-  bind_rows() %>% 
-  knitr::kable()
+  bind_rows() 
+
+head(sim_results)
 ```
 
 Repeat the process above for beta1 = 1, 2, 3, 4, 5, 6
@@ -152,8 +153,39 @@ sim_results_6 =
     estimate_dfs = map(output_lists, bind_rows)) %>% 
   select(-output_lists) %>% 
   unnest(estimate_dfs)
+
+head(sim_results_6)
 ```
 
+Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of beta1 on the x axis.
+
+```{r}
+#read in the data
+sim_results_6 %>% 
+  group_by(beta1_value) %>% 
+  mutate(n_sum = n()) %>% 
+  # find out all the proportion of beta1 should be rejected
+  filter(p_value < 0.05) %>% 
+  group_by(beta1_value) %>% 
+  mutate(n_reject = n(),
+         power = n_reject / n_sum) %>% 
+  select(beta1_value, power) %>% 
+  distinct() %>% 
+  #draw the plot
+  ggplot(aes(x = beta1_value, y = power, fill = beta1_value)) +
+  geom_col() +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(
+    x = "Beta1 Values",
+    y = "Power",
+    title = "Power in Simple Linear Regressions"
+  ) +
+  viridis::scale_color_viridis(
+    name = "Beta1 value", 
+    discrete = TRUE
+  )
+```
 
 
 
