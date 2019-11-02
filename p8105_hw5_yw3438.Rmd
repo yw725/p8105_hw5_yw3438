@@ -179,7 +179,7 @@ sim_results_6 %>%
   labs(
     x = "Beta1 Values",
     y = "Power",
-    title = "Power in Simple Linear Regressions"
+    title = "Fig.1 Power in Simple Linear Regressions"
   ) +
   viridis::scale_color_viridis(
     name = "Beta1 value", 
@@ -192,13 +192,14 @@ From the plot, it can be discovered that as the effect size increases, the power
 The plot showing the relationship between the average estimate of beta1_hat and the value of beta1 is as the following one.
 
 ```{r}
-sim_results_6 %>% 
+total_mean_tvalue = sim_results_6 %>% 
   group_by(beta1_value) %>% 
   mutate(
     mean_beta1_hat = mean(beta1_hat)
   ) %>% 
   select(beta1_value, mean_beta1_hat) %>% 
-  distinct() %>% 
+  distinct() 
+total_mean_tvalue %>% 
   ggplot(aes(x = beta1_value, y = mean_beta1_hat, group = 1)) +
   geom_point(alpha = .8) +
   geom_line() +
@@ -207,10 +208,46 @@ sim_results_6 %>%
   labs(
     x = "Beta1 Values",
     y = "Average Estimation of beta1-hat",
-    title = "Relationship Between Average Estimate of Beta1-hat & Beta1 Value"
+    title = "Fig.2 Relationship Between Average Estimate of Beta1-hat & Beta1 Value"
   )
+
+
 ```
 
 
+The plot showing the average estimate of beta1-hat only in samples for which the null was rejected on the y axis and the true value of beta1 on the x axis. 
 
+```{r message=FALSE}
+sim_results_6 %>% 
+  group_by(beta1_value) %>% 
+  filter(p_value < 0.05) %>% 
+  mutate(mean_reject = mean(beta1_hat)) %>% 
+  select(-p_value, -beta1_hat) %>% 
+  distinct() %>% 
+  full_join(total_mean_tvalue) %>% 
+  pivot_longer(
+    mean_reject:mean_beta1_hat,
+    names_to = "type",
+    values_to = "mean_value"
+  ) %>% 
+  ggplot(aes(x = beta1_value,y = mean_value, color = type)) +
+  geom_point(alpha = .8) +
+  geom_line() +
+  theme_bw() +
+  theme(legend.position = "bottom") +
+  labs(
+    x = "Beta1 Values",
+    y = "Average Estimation of beta1-hat",
+    title = "Fig.3 Relationship Between Average Estimate of Beta1-hat (Rejeced and total) & Beta1 Value"
+  ) +
+  viridis::scale_color_viridis(
+    name = "Type of mean", 
+    discrete = TRUE
+  )
+  
+```
+
+From the plot, it can be discovered that the sample average of beta1-hat across tests for which the null is rejected isn't approximately equal to the true value of beta1.  
+
+Because when the null is rejected, the beta value that we got is significantly different from the true beta1 value, the mean of the beta1-hat values must be significantly different from the true beta value. As a result, the sample average of beta1-hat across tests for which the null is rejected isn't approximately equal to the true value of beta1.
 
